@@ -1,16 +1,14 @@
 project(cppskel)
 
-set( srcs file_1.cpp
-          file_2.cpp )
+set( srcs main.cpp )
 
-set( hdrs file_1.h
-          file_2.h )
+a441_add_executable( cppskel_hello ${srcs} )
 
-set( test_srcs test/test_1.cpp
-               test/test_2.cpp )
+a441_install_targets( cppskel_hello )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set( lib_srcs lib.cpp )
+a441_add_library( cppskel_sample_lib ${lib_srcs} )
 
-a441_add_library( a441manuscript ${srcs} TEST_SOURCES ${test_srcs} )
-
-a441_install_targets( a441manuscript )
+set( test_srcs test.cpp )
+a441_add_test( cppskel_test "${test_srcs}" DEPENDS cppskel_sample_lib 
+                                           LINK_LIBRARIES cppskel_sample_lib)

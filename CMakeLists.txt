@@ -9,13 +9,14 @@ cmake_minimum_required(VERSION 2.8)
 project(a441_all)
 
 #Set ON to enable unit testing by default
-option(a441_testing_enabled "Enable unit testing" OFF)
+option(a441_testing_enabled "Enable unit testing" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(A441FirstRun)
 include(A441Macros)
-include(A441Skeleton)
 include(A441Testing)
+include(A441Skeleton)
+
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 0)

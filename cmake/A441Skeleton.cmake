@@ -12,3 +12,4 @@ if(NOT IS_ABSOLUTE ${CMAKE_INSTALL_PREFIX})
   build directory location.")
   set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
 endif()
+

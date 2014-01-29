@@ -3,13 +3,67 @@ include(CMakeParseArguments)
 include (GenerateExportHeader)
 
 # ----------------------------
+# Register an executable for compilation.
+# 
+# a441_add_executable(target_name <src1> <src2> ... <srcN>
+#                           [DEPENDS var1 var2 ... varN]
+#                           [LINK_LIBRARIES var1 var2 ... varN] )
+#
+macro(a441_add_executable target_name)
+
+  cmake_parse_arguments(a441exe ""
+                                "" 
+                                "DEPENDS;LINK_LIBRARIES" 
+				${ARGN} )
+
+  set(a441exe_srcs ${a441exe_UNPARSED_ARGUMENTS})
+
+  add_executable( ${target_name} ${a441exe_srcs} )
+
+  if(a441exe_DEPENDS)
+    add_dependencies(${target_name} ${a441exe_DEPENDS})
+  endif()
+  if(a441exe_LINK_LIBRARIES)
+    target_link_libraries(${target_name} ${a441exe_LINK_LIBRARIES})
+  endif()
+endmacro()
+
+# ----------------------------
+# Helper function to add a test.  Registers executable for compilation,
+# links to GoogleTest and calls add_test.
+# 
+# a441_add_test(target_name <src1> <src2> ... <srcN>
+#                           [DEPENDS var1 var2 ... varN]
+#                           [LINK_LIBRARIES var1 var2 ... varN] )
+#
+# 
+#
+macro(a441_add_test target_name)
+    cmake_parse_arguments(a441test ""
+                                "" 
+                                "DEPENDS;LINK_LIBRARIES" 
+				${ARGN} )
+
+    list(APPEND a441test_LINK_LIBRARIES "${GTEST_BOTH_LIBRARIES}")
+
+    if(UNIX)
+      list(APPEND a441test_LINK_LIBRARIES pthread)
+    endif()    
+
+    a441_add_executable(${target_name} "${a441test_UNPARSED_ARGUMENTS}"
+                                       DEPENDS "${a441test_DEPENDS}" 
+                                       LINK_LIBRARIES "${a441test_LINK_LIBRARIES}" )
+    add_test(${target_name} ${target_name})
+  
+endmacro()
+
+# ----------------------------
 # Register a library for compilation. 
 # 
 # a441_add_library(target_name <src1> <src2> ... <srcN>
 #                              [PLUGIN] 
 #                              [DEPENDS var1 var2 ... varN]
-#                              [LINK_LIBRARIES var1 var2 ... varN]
-#                              [TEST_SOURCES src1 src2 ... srcN] )
+#                              [LINK_LIBRARIES var1 var2 ... varN] )
 #
 # Parameters:
 # PLUGIN - Build library as a dynamically linked module (rather than a shared library)
@@ -21,7 +75,7 @@ macro(a441_add_library target_name)
 
   cmake_parse_arguments(a441lib "PLUGIN"
                                 "" 
-                                "DEPENDS;LINK_LIBRARIES;TEST_SOURCES" 
+                                "DEPENDS;LINK_LIBRARIES" 
 				${ARGN} )
 
   set(a441lib_type SHARED)
@@ -53,21 +107,6 @@ macro(a441_add_library target_name)
       VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
   endif()
 
-
-  if(a441_testing_enabled AND a441lib_TEST_SOURCES)
-    # Make sure the library is linked against the unit test framework
-    # Create an executable test runner, and link it to the library.
-    set(_a441_testexe_name ${target_name}_test)
-    add_executable(${_a441_testexe_name} ${a441lib_TEST_SOURCES})
-    add_dependencies(${_a441_testexe_name} ${target_name} googletest)
-    target_link_libraries(${_a441_testexe_name} ${target_name} ${GTEST_BOTH_LIBRARIES})
-    if(UNIX)
-      target_link_libraries(${_a441_testexe_name} pthread)
-    endif()
-    add_test(${_a441_testexe_name} ${_a441_testexe_name})
-  endif()
-
-  
 endmacro()
 
 # ------------------------
